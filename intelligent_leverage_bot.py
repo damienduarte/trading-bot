@@ -31,7 +31,7 @@ class Config:
     CRYPTO_PAIRS = ['ETH/USDC', 'BTC/USDC', 'SOL/USDC', 'XRP/USDC']
     MAX_LEVERAGE = 10.0
     RISK_PER_TRADE = 0.02  # 2% max par trade
-    UPDATE_INTERVAL = 31  # secondes
+    UPDATE_INTERVAL = 45  # secondes (plus espacé pour éviter rate limits)
 
 # Données globales
 portfolio_data = {
@@ -161,38 +161,60 @@ def print_banner():
     print()
 
 def get_real_price(symbol):
-    """Récupère le prix réel depuis CoinGecko (plus compatible cloud)"""
-    try:
-        # Mapping des symboles pour CoinGecko
-        coingecko_ids = {
-            'ETH': 'ethereum',
-            'BTC': 'bitcoin', 
-            'SOL': 'solana',
-            'XRP': 'ripple'
-        }
-        
-        if symbol in coingecko_ids:
-            coin_id = coingecko_ids[symbol]
-            url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    """Récupère le prix réel avec système hybride et retry"""
+    import time
+    
+    # Tentative 1: CoinGecko
+    for attempt in range(2):
+        try:
+            coingecko_ids = {
+                'ETH': 'ethereum', 'BTC': 'bitcoin', 
+                'SOL': 'solana', 'XRP': 'ripple'
             }
             
-            response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                price = data[coin_id]['usd']
-                print(f"📊 {symbol}: ${price:,.2f} (CoinGecko)")
-                return float(price)
-    except Exception as e:
-        print(f"⚠️ Erreur API CoinGecko pour {symbol}: {e}")
+            if symbol in coingecko_ids:
+                coin_id = coingecko_ids[symbol]
+                url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
+                
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'application/json'
+                }
+                
+                response = requests.get(url, headers=headers, timeout=8)
+                if response.status_code == 200:
+                    data = response.json()
+                    if coin_id in data and 'usd' in data[coin_id]:
+                        price = data[coin_id]['usd']
+                        print(f"📊 {symbol}: ${price:,.2f} (CoinGecko)")
+                        return float(price)
+                elif response.status_code == 429:  # Rate limited
+                    print(f"⏳ Rate limit CoinGecko, attente... (tentative {attempt+1})")
+                    time.sleep(3)
+                    continue
+                    
+        except Exception as e:
+            print(f"⚠️ Erreur CoinGecko {symbol} (tentative {attempt+1}): {e}")
+            if attempt == 0:
+                time.sleep(2)
     
-    # Fallback sur prix de base si API échoue
+    # Tentative 2: Fallback Binance 
+    try:
+        url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}USDT"
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            price = float(data['price'])
+            print(f"📊 {symbol}: ${price:,.2f} (Binance)")
+            return price
+    except Exception as e:
+        print(f"⚠️ Erreur Binance {symbol}: {e}")
+    
+    # Fallback final
     fallback_prices = {
         'ETH': 4400, 'BTC': 119000, 'SOL': 177, 'XRP': 3.18
     }
-    print(f"🔄 Utilisation prix fallback pour {symbol}: ${fallback_prices.get(symbol, 100)}")
+    print(f"🔄 Prix fallback {symbol}: ${fallback_prices.get(symbol, 100)}")
     return fallback_prices.get(symbol, 100)
 
 def update_crypto_analysis():
