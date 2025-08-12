@@ -151,7 +151,7 @@ class Position:
 def print_banner():
     """Affiche le banner de démarrage"""
     print("✅ Bitget connecté")
-    print("✅ Binance connecté")
+    print("✅ CoinGecko connecté")
     print("⚡ BOT MULTI-CRYPTOS AVEC LEVIER INTELLIGENT")
     print("🌐 http://localhost:5000")
     print("🎯 Analyse IA des signaux en temps réel")
@@ -161,20 +161,38 @@ def print_banner():
     print()
 
 def get_real_price(symbol):
-    """Récupère le prix réel depuis Binance"""
+    """Récupère le prix réel depuis CoinGecko (plus compatible cloud)"""
     try:
-        url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}USDT"
-        response = requests.get(url, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            return float(data['price'])
+        # Mapping des symboles pour CoinGecko
+        coingecko_ids = {
+            'ETH': 'ethereum',
+            'BTC': 'bitcoin', 
+            'SOL': 'solana',
+            'XRP': 'ripple'
+        }
+        
+        if symbol in coingecko_ids:
+            coin_id = coingecko_ids[symbol]
+            url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                price = data[coin_id]['usd']
+                print(f"📊 {symbol}: ${price:,.2f} (CoinGecko)")
+                return float(price)
     except Exception as e:
-        print(f"⚠️ Erreur API Binance pour {symbol}: {e}")
+        print(f"⚠️ Erreur API CoinGecko pour {symbol}: {e}")
     
     # Fallback sur prix de base si API échoue
     fallback_prices = {
         'ETH': 4400, 'BTC': 119000, 'SOL': 177, 'XRP': 3.18
     }
+    print(f"🔄 Utilisation prix fallback pour {symbol}: ${fallback_prices.get(symbol, 100)}")
     return fallback_prices.get(symbol, 100)
 
 def update_crypto_analysis():
