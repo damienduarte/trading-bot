@@ -1,0 +1,21 @@
+{
+  "test_info": {
+    "start_time": "2025-08-12T12:09:32.549849",
+    "end_time": "2025-08-12T12:14:44.040005",
+    "duration_hours": 0.08652504333333334,
+    "total_cycles": 1,
+    "signals_generated": 0,
+    "trades_executed": 0,
+    "successful_trades": 0,
+    "failed_trades": 0,
+    "success_rate": 0.0
+  },
+  "configuration": {
+    "mode": "paper",
+    "symbol": "ETH/USDC",
+    "strategy": "mean_reversion",
+    "cycle_interval": 300,
+    "initial_balance": 10000
+  },
+  "performance_data": []
+}

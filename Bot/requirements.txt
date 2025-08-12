@@ -1,0 +1,20 @@
+# Bot Trading ETH/USDC - Dépendances Essentielles
+
+# API et Exchange
+ccxt>=4.0.0
+
+# Analyse technique  
+pandas>=2.0.0
+numpy>=1.24.0
+ta-lib>=0.4.25
+
+# Dashboard Web
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# Serveur de production
+gunicorn>=21.2.0
+
+# Configuration et logs
+python-dotenv>=1.0.0
+cryptography>=41.0.0
