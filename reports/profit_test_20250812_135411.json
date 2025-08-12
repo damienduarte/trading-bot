@@ -1,0 +1,30 @@
+{
+  "test_summary": {
+    "start_time": "2025-08-12T13:49:01.675896",
+    "end_time": "2025-08-12T13:54:11.129553",
+    "duration_hours": 0.08595934916666667,
+    "total_cycles": 1,
+    "signals_generated": 0
+  },
+  "financial_results": {
+    "initial_balance": 10000,
+    "current_usdc": 10000,
+    "current_eth": 0.0,
+    "eth_value_usdc": 0.0,
+    "total_portfolio_value": 10000.0,
+    "profit_loss_usdc": 0.0,
+    "profit_loss_percent": 0.0,
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0.0,
+    "trade_history": []
+  },
+  "configuration": {
+    "mode": "paper",
+    "symbol": "ETH/USDC",
+    "initial_balance": 10000,
+    "dashboard_enabled": true
+  },
+  "performance_snapshots": []
+}
